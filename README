@@ -1,0 +1,2 @@
+reLight and isomap
+takes in the type of image file and the directory of the images and generates a plot of the embedding into 3 dimensions
