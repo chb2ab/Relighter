@@ -1,15 +1,11 @@
+import pdb
+
 import numpy
 import sys
 from scipy.spatial import distance
 from operator import itemgetter
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
-
-# List of methods
-# euclidKNN(root, prog, images, k)
-# eucMat(images)
-# floyds(root, prog, neighborhoods)
-# MDS(dmatrix, tgtdims)
 
 # Takes in an N length list of image vectors (numpy.array) and a k value (int) that decides how many neighbors to find for each image. Finds the k nearest neighbors for each image and returns an NxN 2 dimensional distance matrix (list of lists) where neighbor relations are given by the euclidean distance between points. If 2 points are neighbors there distance equals their euclidean distance, if 2 points are not neighbors there distance is infinite.
 def euclidKNN(root, prog, images, k):
@@ -88,7 +84,19 @@ def MDS(dmatrix, tgtdims):
 	vecs = vecs[:,idx]
 	coords = vecs[:,:tgtdims] * numpy.sqrt(vals[:tgtdims])
 	return coords
-
+	
+def visualize(coords, neighborlist):
+	fig = plt.figure()
+	ax = Axes3D(fig)
+	for ii in coords:
+		plt.plot([ii[0]], [ii[1]], "ro", zs=[ii[2]])
+	if neighborlist != False:
+		for ii in range(len(neighborlist)):
+			for jj in neighborlist[ii]:
+				plt.plot((coords[ii][0],coords[jj][0]),(coords[ii][1],coords[jj][1]), "k-", zs=(coords[ii][2],coords[jj][2]))
+				if ii in neighborlist[jj]:
+					neighborlist[jj].remove(ii)
+	plt.show()
 
 
 

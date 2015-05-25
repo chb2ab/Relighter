@@ -1,0 +1,331 @@
+from Tkinter import *
+from reader import readDir, readCSV
+from isomap import euclidKNN, floyds, MDS
+from Sphere import sphFitting, sphBase, chooseTop, getTop, Rectify, UnfoldSphere, RotateCords
+import numpy as np
+import Image, ImageTk
+from Delauney import interpolate
+import scipy.misc
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d, Axes3D
+
+# List of methods
+# __init__(self)
+# setInputCSV(self)
+# setInputDir(self)
+# getDir(self, *args)
+# getCSV(self, *args)
+# embed(self, imagevects)
+# reOrient(self)
+# placePanel(self, paneldata)
+# placeRects(self)
+# rotate(self, val)
+# OnMouseDown(self, event)
+# OnMouseUp(self, event)
+# poll(self)
+# do_work(self)
+# showraw3Dembedding(self)
+# showraw3Dembeddingwn(self)
+# show3Dembedding(self)
+# show3Dembeddingwn(self)
+# showunroll(self)
+# showunrollwn(self)
+import pdb
+class Viewer:
+	# Initializes main window in the upper left corner of the screen. Two buttons are provided, the first one will adjust the main window to read data from a CSV file as discussed in the readme and the second will adjust the main window to read data from a directory full of images.
+	def __init__(self):
+		self.root = Tk()
+		pdb.set_trace()
+		self.root.wm_geometry(u'10x10+0+0')
+		self.root.wm_geometry('')
+		self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
+		self.root.configure(background = 'white smoke')
+		# Initial top two bottoms
+		self.ftop = Frame(self.root)
+		self.rcsv = Button(self.ftop,text='Read from CSV file',command=self.setInputCSV)
+		self.rdir = Button(self.ftop,text='Read a directory of images',command=self.setInputDir)
+		self.rcsv.pack(side='left')
+		self.rdir.pack(side='right')
+		self.ftop.pack()
+		# Bottom text inputs
+		self.f = Frame(self.root)
+		# dir text inputs
+		self.lbl1 = Label(self.f,text="Filetype for images eg 'jpg':")
+		self.in1 = Entry(self.f,text='filetype')
+		self.in1.focus_set()
+		self.lbl2 = Label(self.f,text="Directory of source images eg 'sphereback':")
+		self.in2 = Entry(self.f,text='sourcedir')
+		self.in2.focus_set()
+		self.okdir = Button(self.f,text='Ok',command=self.getDir)
+		# CSV text inputs
+		self.lbl3 = Label(self.f,text="Input csv file eg 'sphcordsprims200.csv':")
+		self.in3 = Entry(self.f,text='csvfile')
+		self.in3.focus_set()
+		self.okcsv = Button(self.f,text='Ok',command=self.getCSV)
+		self.f.pack()
+		self.prog = Label(self.ftop, text="loading images: ")
+		self.root.mainloop()
+	# Adjusts the main window to accept a csv file. Pressing the 'Ok' button calls getCSV.
+	def setInputCSV(self):
+		self.okdir.pack_forget()
+		self.lbl1.pack_forget()
+		self.in1.pack_forget()
+		self.lbl2.pack_forget()
+		self.in2.pack_forget()
+		self.lbl3.pack(side='left')
+		self.in3.pack(side='left')
+		self.in3.delete(0,END)
+		self.in3.insert(0,'sphcordsprims200.csv')
+		self.okcsv.pack(side='right')
+		self.root.bind("<Return>", self.getCSV)
+	# Adjusts the main window to accept a filetype and name of directory. Pressing the 'Ok' button calls getDir
+	def setInputDir(self):
+		self.okcsv.pack_forget()
+		self.lbl3.pack_forget()
+		self.in3.pack_forget()
+		self.lbl1.pack(side='left')
+		self.in1.pack(side='left')
+		self.in1.delete(0,END)
+		self.in1.insert(0,'jpg')
+		self.lbl2.pack(side='left')
+		self.in2.pack(side='left')
+		self.in2.delete(0,END)
+		self.in2.insert(0,'sphere110')
+		self.okdir.pack(side='right')
+		self.root.bind("<Return>", self.getDir)
+	# Read the data from a directory of images. The main window displays how many images have been read so far. The class variable imagenames is set as a list of all the image files and the class variable images is a list of image matrices (numpy.arrays). After the images are read a k value is input and embed is called after pressing the 'Ok' button.
+	def getDir(self, *args):
+		self.filetype = self.in1.get()
+		self.sourcedir = self.in2.get()
+		self.rcsv.destroy()
+		self.rdir.destroy()
+		self.f.destroy()
+		self.prog.pack()
+		imagevects, self.imagenames, self.images = readDir(self.root, self.prog, self.filetype, self.sourcedir, 0.25)
+		self.lbl = Label(self.ftop,text="k nearest neighbors:")
+		self.kin = Entry(self.ftop,text='k')
+		self.ok = Button(self.ftop,text='Ok',command= lambda: self.embed(imagevects))
+		self.kin.focus_set()
+		self.lbl.pack(side='left')
+		self.kin.pack(side='left')
+		self.ok.pack(side='left')
+		self.root.bind("<Return>", lambda e: self.embed(imagevects))
+	# Read the data from a CSV file. The main window displays the progress made so far. Imagenames will be an empty list. After the data are read a k value is input and embed is called after pressing the 'Ok' button.
+	def getCSV(self, *args):
+		filename = self.in3.get()
+		self.rcsv.destroy()
+		self.rdir.destroy()
+		self.f.destroy()
+		self.prog.pack()
+		imagevects, self.imagenames = readCSV(self.root, self.prog, filename)
+		self.lbl = Label(self.ftop,text="k nearest neighbors:")
+		self.kin = Entry(self.ftop,text='k')
+		self.ok = Button(self.ftop,text='Ok',command= lambda: self.embed(imagevects))
+		self.kin.focus_set()
+		self.lbl.pack(side='left')
+		self.kin.pack(side='left')
+		self.ok.pack(side='left')
+		self.root.bind("<Return>", lambda e: self.embed(imagevects))
+	# Takes in a list of image vectors (numpy.arrays) and embedds them into 3 dimensions using input k value. The progress generating the euclidean distance matrix as well as the geodesic distance matrix is shown in the main window. After the embedding is calculated the embedding is shown in a pyplot and the user selects the top point of the embedding to reorient the hemisphere. Pressing the 'accept coordinates' button uses the currently selected point and calls reOrient. 
+	def embed(self, imagevects):
+		kneigh = int(self.kin.get())
+		self.lbl.destroy()
+		self.kin.destroy()
+		self.ok.destroy()
+		# Get k nearest neighbors of each image
+		neighbormat, self.neighborlist = euclidKNN(self.root, self.prog, imagevects, kneigh)	
+		# Generate the geodesic distance between all images based on the generated neighborhoods
+		neighbormat = floyds(self.root, self.prog, neighbormat)
+		# embed the geodesic distance matrix into target number of dimensions
+		self.rawembedrect3d = MDS(neighbormat, 3)
+		coordinates = sphFitting(self.rawembedrect3d)
+		self.prog['text'] = "Coordinates: "
+		self.accept = Button(self.ftop, text='accept coordinates', command = self.reOrient)
+		chooseTop(self.prog, coordinates)
+		self.embedrect3d = coordinates
+		self.accept.pack(side='left')
+	# Uses the previously selected top coordinate to reorient the hemisphere. The hemisphere is then unfolded into 2 dimensions and these coordinates are passed to the placePanel method.
+	def reOrient(self):
+		plt.close('all')
+		self.accept.destroy()
+		self.prog.destroy()
+		self.ftop.destroy()
+		xtop, ytop, ztop = getTop()
+		self.embedrect3d = Rectify(self.embedrect3d, [xtop, ytop, ztop])
+		paneldata = UnfoldSphere(self.embedrect3d)
+		self.placePanel(paneldata)
+	# Sets up the final main window which has 6 buttons along the top that when pressed display pyplots of the data during intermediate steps of the entire process. The main window also has a blue panel and scale that can be interacted with as described in the readme.
+	def placePanel(self, paneldata):
+		# 6 buttons along the top of the main window
+		buttonFrame = Frame()
+		b1 = Button(buttonFrame, text='Raw 3D Embedding', command=self.showraw3Dembedding)
+		b1.pack(side = 'left')
+		b2 = Button(buttonFrame, text='w/ Neighbors', command=self.showraw3Dembeddingwn)
+		b2.pack(side = 'left')
+		b3 = Button(buttonFrame, text='Fit 3D Embedding', command=self.show3Dembedding)
+		b3.pack(side = 'left')
+		b4 = Button(buttonFrame, text='w/ Neighbors', command=self.show3Dembeddingwn)
+		b4.pack(side = 'left')
+		b5 = Button(buttonFrame, text='Unrolled Embedding', command=self.showunroll)
+		b5.pack(side = 'left')
+		b6 = Button(buttonFrame, text='w/ Neighbors', command=self.showunrollwn)
+		b6.pack(side = 'left')
+		buttonFrame.pack(side='top')
+		# image display (if images were used)
+		self.imgv=Label(self.root)
+		self.imgv.pack(side = 'left')
+		# blue panel
+		self.panel_w = 400
+		self.panel_h = 400
+		self.canvas = Canvas(self.root, width = self.panel_w, height = self.panel_h, background="steel blue")
+		self.canvas.bind("<ButtonPress-1>", self.OnMouseDown)
+		self.canvas.bind("<ButtonRelease-1>", self.OnMouseUp)
+		self.canvas.pack(side = 'left')
+		# rotate data on panel
+		self.rotated = 0
+		self.paneldata = np.asarray(paneldata)
+		scale = Scale(self.root, from_=-180, to=180, variable = IntVar(), length = 300, background ='white smoke', command=self.rotate)
+		scale.pack(side = 'left')
+		# Initialize previously selected data points to 0
+		self.previous = [0, 0, 0]
+		self.root.mainloop()
+	# Scales the data to fit within the size of the blue panel and places each data point on the panel as a black rectangle. Each rectangle is appended to the self.rectangles list.
+	def placeRects(self):
+		self.maxx = 0
+		self.maxy = 0
+		for row in self.paneldata:
+			if abs(float(row[0])) > self.maxx:
+				self.maxx = abs(float(row[0]))
+			if abs(float(row[1])) > self.maxy:
+				self.maxy = abs(float(row[1]))
+		self.rectangles = []
+		factor_x = self.panel_w / 2
+		factor_y = self.panel_h / 2
+		for ii in range(len(self.paneldata)):
+			x = self.paneldata[ii][0]*(factor_x)/self.maxx+(self.panel_w/2)
+			y = self.paneldata[ii][1]*(factor_y)/self.maxy+(self.panel_h/2)
+			self.paneldata[ii][0] = self.paneldata[ii][0]*factor_x/self.maxx
+			self.paneldata[ii][1] = self.paneldata[ii][1]*factor_y/self.maxy
+			rectangle = self.canvas.create_rectangle(x-1, y-1, x+1, y+1, outline="black", fill="black")
+			self.rectangles.append(rectangle)
+	# Uses the current value of the rotater scale to call RotateCords on the data. All elements on the canvas are deleted and placeRects is called with the rotated data.
+	def rotate(self, val):
+		rot = int(val) - self.rotated
+		self.paneldata = RotateCords(self.paneldata, rot, 'z')
+		self.rotated = int(val)
+		self.canvas.delete("all")
+		self.placeRects()
+	# When the mouse is pressed on the blue panel the method poll is called.
+	def OnMouseDown(self, event):
+		self.poll()
+	# When the mouse is released cancel the after_id that is repeatedly calling poll.
+	def OnMouseUp(self, event):
+		self.root.after_cancel(self.after_id)		
+	# Call the poll method every 15 milliseconds until self.after_id is canceled OnMouseUp.
+	def poll(self):
+		self.do_work()
+		self.after_id = self.root.after(15, self.poll)
+	# Get the mouse position on the blue panel, call the delauney interpolate function to find the 3 nearest data points (represented as the 3 black dots on the panel nearest to the cursor) and their corresponding weights, color these 3 points white to visualize where the images are coming from, retrieve the 3 images these data points correspond too, linearly interpolate these 3 images based on the weights found from the interpolation, and replace the imgv label with the newly formed image.
+	def do_work(self):
+		# Get mouse position on the blue panel
+		x = self.root.winfo_pointerx()
+		y = self.root.winfo_pointery()
+		xx = self.canvas.winfo_rootx()
+		yy = self.canvas.winfo_rooty()
+		x = x-xx
+		y = y-yy
+		x -= self.panel_w / 2
+		y -= self.panel_h / 2
+		# Delauney triangulation
+		(index1, index2, index3) = interpolate(self.paneldata, x, y)
+		# Recolor the previously selected data points to black and the newly selected data points to white
+		self.canvas.itemconfigure(self.rectangles[self.previous[0]], fill='black')
+		self.canvas.itemconfigure(self.rectangles[self.previous[1]], fill='black')
+		self.canvas.itemconfigure(self.rectangles[self.previous[2]], fill='black')
+		self.canvas.itemconfigure(self.rectangles[int(index1[0])], fill='white')
+		self.canvas.itemconfigure(self.rectangles[int(index2[0])], fill='white')
+		self.canvas.itemconfigure(self.rectangles[int(index3[0])], fill='white')
+		self.previous = [int(index1[0]), int(index2[0]), int(index3[0])]
+		# When the cursor is outside the cloud of data points only 2 nearest data points are used to interpolate the new image
+		if index3[0] == -1:
+			w1 = index1[1]
+			w2 = index2[1]
+			npimg = (w1 *self.images[int(index1[0])] + self.images[int(index2[0])] * w2)
+		# Otherwise the new image is the interpolation of 3 nearest data points
+		else:
+			w1 = index1[1]
+			w2 = index2[1]
+			w3 = index3[1]
+			npimg = (w1 *self.images[int(index1[0])] + self.images[int(index2[0])] * w2 + self.images[int(index3[0])] *w3)
+		# imgv is then set to display this newly interpolated image
+		img = Image.fromarray(np.uint8(npimg))
+		imgTk = ImageTk.PhotoImage(img)
+		self.imgv.configure(image = imgTk)
+		self.imgv.image = imgTk
+	# Create a pyplot displaying the raw 3D embedding of the data.
+	def showraw3Dembedding(self):
+		x,y,z = zip(*self.rawembedrect3d)
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111, projection='3d')
+		ax1.set_title('Raw 3D Embedding')
+		ax1.scatter(x, y, z, c='b')
+		fig.show()
+	# Create a pyplot displaying the raw 3D embedding of the data with neighbor relations shown.
+	def showraw3Dembeddingwn(self):
+		x,y,z = zip(*self.rawembedrect3d)
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111, projection='3d')
+		ax1.set_title('Raw 3D Embedding With Neighbors')
+		ax1.scatter(x, y, z, c='b')
+		for ii in range(len(self.neighborlist)):
+			for jj in self.neighborlist[ii]:
+				ax1.plot((self.rawembedrect3d[ii][0],self.rawembedrect3d[jj][0]),(self.rawembedrect3d[ii][1],self.rawembedrect3d[jj][1]), "k-", zs=(self.rawembedrect3d[ii][2],self.rawembedrect3d[jj][2]))
+				if ii in self.neighborlist[jj]:
+					self.neighborlist[jj].remove(ii)
+		fig.show()
+	# Create a pyplot displaying the 3D embedding after sphere fitting.
+	def show3Dembedding(self):
+		x,y,z = zip(*self.embedrect3d)
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111, projection='3d')
+		ax1.set_title('3D Embedding')
+		ax1.scatter(x, y, z, c='b')
+		fig.show()
+	# Create a pyplot displaying the 3D embedding after sphere fitting with neighbor relations shown.
+	def show3Dembeddingwn(self):
+		x,y,z = zip(*self.embedrect3d)
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111, projection='3d')
+		ax1.set_title('3D Embedding With Neighbors')
+		ax1.scatter(x, y, z, c='b')
+		for ii in range(len(self.neighborlist)):
+			for jj in self.neighborlist[ii]:
+				ax1.plot((self.embedrect3d[ii][0],self.embedrect3d[jj][0]),(self.embedrect3d[ii][1],self.embedrect3d[jj][1]), "k-", zs=(self.embedrect3d[ii][2],self.embedrect3d[jj][2]))
+				if ii in self.neighborlist[jj]:
+					self.neighborlist[jj].remove(ii)
+		fig.show()
+	# Create a pyplot displaying the 2D embedding after unrolling the sphere.
+	def showunroll(self):
+		x,y = zip(*self.paneldata)
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111)
+		ax1.set_title('Unrolled Embedding')
+		ax1.scatter(x, y, c='b')
+		fig.show()
+	# Create a pyplot displaying the 2D embedding after unrolling the sphere with neighbor relations shown.
+	def showunrollwn(self):
+		x,y = zip(*self.paneldata)
+		fig = plt.figure()
+		ax1 = fig.add_subplot(111)
+		ax1.set_title('Unrolled Embedding With Neighbors')
+		ax1.scatter(x, y, c='b')
+		for ii in range(len(self.neighborlist)):
+			for jj in self.neighborlist[ii]:
+				ax1.plot((self.paneldata[ii][0],self.paneldata[jj][0]),(self.paneldata[ii][1],self.paneldata[jj][1]), "k-")
+				if ii in self.neighborlist[jj]:
+					self.neighborlist[jj].remove(ii)
+		fig.show()
+
+
+
+
