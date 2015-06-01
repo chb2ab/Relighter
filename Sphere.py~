@@ -7,57 +7,58 @@ import copy as c
 from isomap import eucMat
 import sys
 
-# Takes in 
+previous = None
+xtop = 0
+ytop = 0
+ztop = 0
+
+# Takes in an Nxdim array of samples (numpy.array of numpy.arrays) where N is the number of samples and dim is the number of dimensions (3 in our case) and returns the data projected onto the best fitting sphere and centered around the origin as a 2 dimensional list.
 def sphFitting(sphere):
 	methods = ["Hyper", "Taubin", "Pratt"]
 	datax,datay,dataz = zip(*sphere)	
 	fit = fit_hypersphere(sphere,methods[0])
-
+	# radius, x, y, and z coordinates of the sphere
 	sphr = fit[0]
 	sphx = fit[1][0]
 	sphy = fit[1][1]
 	sphz = fit[1][2]
-	# center the sphere at the origin
+	# center the data to the origin
 	vectorx = [x - sphx for x in datax]
 	vectory = [y - sphy for y in datay]
 	vectorz= [z - sphz for z in dataz]
-
 	vectorlist = zip(*[vectorx, vectory, vectorz])
-	
+	# project onto sphere
 	coordonsph = [[(vector[0] * sphr /sqrt(pow(vector[0],2)+pow(vector[1],2)+pow(vector[2],2))),(vector[1] * sphr /sqrt(pow(vector[0],2)+pow(vector[1],2)+pow(vector[2],2))),(vector[2] * sphr /sqrt(pow(vector[0],2)+pow(vector[1],2)+pow(vector[2],2))) ]for vector in vectorlist]
 	return coordonsph
-
-def sphBase(sphere):
-	euclideans = eucMat(sphere)
-	area = 0
-	indices = []
-	for ii in range(len(euclideans)):
-		for jj in range(len(euclideans)):
-			for kk in range(len(euclideans)):
-				s1 = euclideans[ii][jj]
-				s2 = euclideans[ii][kk]
-				s3 = euclideans[jj][kk]
-				p = (s1+s2+s3)/2
-				a = sqrt(p*(p-s1)*(p-s2)*(p-s3))
-				if a > area:
-					area = a
-					indices = [ii,jj,kk]
-	return indices
-
+# Unused code for automatically rectifying the sphere. Takes in the sphere coordinates as a Nxdim 2 dimensional list where N is the number of samples and dim is the number of dimensions (3 in our case) and iterates through all triplets of points, calculating the area of the triangle formed by the 3 points, and searching for the triplet with the largest area, returning the indices of the 3 points that form the largest triangle. The idea was that these 3 points would form the base of the hemisphere to rectify the sphere and find the top of the sphere, however this did not work as well as intended and I moved to manually selecting the top point.
+#def sphBase(sphere):
+#	euclideans = eucMat(sphere)
+#	area = 0
+#	indices = []
+#	for ii in range(len(euclideans)):
+#		for jj in range(len(euclideans)):
+#			for kk in range(len(euclideans)):
+#				s1 = euclideans[ii][jj]
+#				s2 = euclideans[ii][kk]
+#				s3 = euclideans[jj][kk]
+#				p = (s1+s2+s3)/2
+#				a = sqrt(p*(p-s1)*(p-s2)*(p-s3))
+#				if a > area:
+#					area = a
+#					indices = [ii,jj,kk]
+#	return indices
+# Manual selection of the top point of the sphere. Takes in a Tkinter label that displays the coordinates of the selected point and the data as an Nxdim 2 dimensional list where N is the number of samples and dim is the number of dimensions (3 in our case). Sets up a 3 dimensional pyplot of the data and the user selects the data point they believe is the top of the hemisphere formed by the data. On accepting that point the data will be rotated so that point is the highest in the z direction.
 def chooseTop(prog, coordinates):
 	x,y,z = zip(*coordinates)
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111, projection='3d')
 	ax1.set_title('Pick the Top Point')
 	ax1.scatter(x, y, z, c='b',picker=5)
-	fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, ax1, prog, fig))
+	fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, ax1, prog))
 	fig.show()
-
-previous = None
-xtop = 0
-ytop = 0
-ztop = 0
-def onpick(event, ax1, prog, fig):
+# Called when a data point in the pyplot is clicked. Takes in the click event, the subplot that was clicked, and the Tkinter label. Highlights the point that was clicked on the subplot in red and writes the coordinates of the point on the label.
+def onpick(event, ax1, prog):
+	# previous is the previous point that was clicked that needs to be erased. xtop, ytop, and ztop are the coordinates of the point chosen as the top.
 	global previous, xtop, ytop, ztop
 	if (previous != None):
 		previous.remove()
@@ -69,14 +70,14 @@ def onpick(event, ax1, prog, fig):
 	prog['text'] = "Coordinates: (%s, %s, %s)" % (xtop, ytop, ztop)
 	previous = ax1.scatter([xtop], [ytop], zs=[ztop], s = 50, c=['r'],picker=5)
 	plt.draw()
-
+# Returns the 3 dimensional coordinates for the chosen point as floats.  
 def getTop():
 	return xtop, ytop, ztop
-
-
+# Takes in the data as a Nxdim 2 dimensional list where N is the number of samples and dim is the number of dimensions (either 2 or 3 dimensions), the angle to rotate (can be anything that can be converted to a float), and the axis to rotate around (either 'x', 'y', or 'z'). Returns a Nxdim 2 dimensional array of the coordinates after the rotation.
 def RotateCords(Cords, angle, axis):
 	Cords = np.array(Cords)
 	twod = False
+	# If the data is 2 dimensions then it is made into 3 dimensions by appending 0 to all data points.
 	if (len(Cords[0]) == 2):
 		twod = True
 		Cords = np.append(Cords, [[0] for _ in range(len(Cords))], axis=1)
@@ -92,16 +93,14 @@ def RotateCords(Cords, angle, axis):
 	if (twod):
 		ans = zip(ans[0],ans[1])
 	return np.asarray(ans)
-	
+# Takes in a list of length 3 formatted [x,y,z] where x, y, and z are euclidean coordinates and converts them into spherical coordinates returning a numpy.array of length 3 formatted [radius,theta,phi]. (phi is measured on the x, y plane with the +x axis = 0, theta is measured from the +z axis, radius is calculated from the origin).
 def GlobalToSphere(Cords):
 	x = Cords[0]
 	y = Cords[1]
 	z = Cords[2]
-	
 	radius = np.linalg.norm(np.array([x, y, z]))
 	theta = 0
 	phi = 0
-	
 	if z == 0:
 		theta = np.pi / 2
 	else:
@@ -119,21 +118,22 @@ def GlobalToSphere(Cords):
 		phi = np.arctan(float(y) / x) + np.pi
 	if x > 0 and y < 0:
 		phi = np.pi * 2 + np.arctan(float(y)/x)
-	
 	ans = np.array([radius, theta, phi])
 	return ans
-
-def Rectify(Cords, dirVec): # rectify Sphere cords with "dirVec" oriantation to z axis
+# Rectify the Sphere coordinates to be oriented upwards along the z axis. Cords is a Nx3 2 dimensional list where N is the number of samples. dirVec is a list that contains the 3 coordinates for the top point of the sphere to rectify as the highest point along the z axis. Returns a Nx3 2 dimensional list of rectified coordinates.
+def Rectify(Cords, dirVec):
 	dirVec = np.array(dirVec)
 	Cords = np.array(Cords)
 	ans = c.copy(Cords).T
+	# Get the angle offset from the z axis for the top coordinate
 	SphereDir = GlobalToSphere(dirVec)
 	phi = - SphereDir[2] * 180 / np.pi
 	theta = - SphereDir[1] * 180 / np.pi
+	# Rotate the sphere so the top coordinate lies on the z axis
 	ans = RotateCords(ans, phi, 'z')
 	ans = RotateCords(ans, theta, 'y')
 	return ans.T.tolist()
-
+# Unfolds a Sphere into a 2D circle. Takes in the coordinates of the sphere as a Nx3 2 dimensional list where N is the number of samples. Returns a Nx2 2 dimensional list of the data coordinates unfolded into 2 dimensions.
 def UnfoldSphere(Cords, figRadius = 0):# unfold a Sphere into a 2D circle
 	Cords = np.array(Cords)
 	SCords = c.copy(Cords)

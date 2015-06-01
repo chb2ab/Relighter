@@ -1,49 +1,56 @@
 import numpy as np
 from scipy.spatial import Delaunay
 
-def Interpolate(paneldata, x, y):
-    cord = np.array([x,y])
-    n = len(paneldata)
-    tri = Delaunay(paneldata)
-    triangleindex = tri.find_simplex(cord)
-    intercords = tri.simplices[triangleindex]
-    index1 = np.empty(2)
-    index2 = np.empty(2)
-    index3 = np.empty(2)
-    if triangleindex >= 0:
-        index1[0] = intercords[0]
-        index2[0] = intercords[1]
-        index3[0] = intercords[2]
-        x1 = tri.points[intercords[0]][0]
-        y1 = tri.points[intercords[0]][1]
-        x2 = tri.points[intercords[1]][0]
-        y2 = tri.points[intercords[1]][1]
-        x3 = tri.points[intercords[2]][0]
-        y3 = tri.points[intercords[2]][1]
-        
-        index1[1] = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
-        index2[1] = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
-        index3[1] = 1 - index1[1] - index2[1]
-    else:
-        index1[0] = -1
-        index1[1] = 10000000
-        index2[0] = -1
-        index2[1] = 10000000
-        index3[0] = -1
-        index3[1] = 0
-        distance = np.empty(n)
-        for i in range(n):
-            distance[i] = np.linalg.norm(np.subtract(cord, paneldata[i]))
-            if distance[i] < index1[1]:
-                index2[0] = index1[0]
-                index2[1] = index1[1]
-                index1[0] = i
-                index1[1] = distance[i]
-            elif distance[i] < index2[1]:
-                index2[0] = i
-                index2[1] = distance[i]
-        base = index1[1] + index2[1]
-        index1[1] /= base
-        index2[1] /= base
-    ans = np.array([index1, index2, index3])        
-    return ans
+# List of methods
+# interpolate(paneldata, x, y)
+
+# Takes in an Nx2 2 dimensional numpy.array of data where N is the number of sample points, and takes an x and y coordinate. Finds the delaunay triangulation of the coordinate and returns a numpy.array containing 3 numpy.array's each of length 2. The first element in each numpy.array is the index of one of the 3 data points found from the delaunay triangulation, and the second element is a float between 0 and 1 determining how much weight to give that point. The data points are indexed from the Nx2 array of data points that were input into the function. If the x,y coordinate is outside the region formed by the data points that can contain a triangle then
+def interpolate(paneldata, x, y):
+	cord = np.array([x,y])
+	n = len(paneldata)
+	tri = Delaunay(paneldata)
+	triangleindex = tri.find_simplex(cord)
+	intercords = tri.simplices[triangleindex]
+	index1 = np.empty(2)
+	index2 = np.empty(2)
+	index3 = np.empty(2)
+	# Check if the coordinate is inside the data cloud 
+	if triangleindex >= 0:
+		index1[0] = intercords[0]
+		index2[0] = intercords[1]
+		index3[0] = intercords[2]
+		x1 = tri.points[intercords[0]][0]
+		y1 = tri.points[intercords[0]][1]
+		x2 = tri.points[intercords[1]][0]
+		y2 = tri.points[intercords[1]][1]
+		x3 = tri.points[intercords[2]][0]
+		y3 = tri.points[intercords[2]][1]
+		# Calculate the weight to give each data point as a function of how close it is to the input coordinate.
+		index1[1] = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
+		index2[1] = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
+		index3[1] = 1 - index1[1] - index2[1]
+	# If the coordinate is outside the data cloud find the 2 nearest data points and calculate their weights.
+	else:
+		index1[0] = -1
+		index1[1] = 10000000
+		index2[0] = -1
+		index2[1] = 10000000
+		index3[0] = -1
+		index3[1] = 0
+		distance = np.empty(n)
+		for i in range(n):
+			distance[i] = np.linalg.norm(np.subtract(cord, paneldata[i]))
+			if distance[i] < index1[1]:
+				index2[0] = index1[0]
+				index2[1] = index1[1]
+				index1[0] = i
+				index1[1] = distance[i]
+			elif distance[i] < index2[1]:
+				index2[0] = i
+				index2[1] = distance[i]
+		base = index1[1] + index2[1]
+		index1[1] /= base
+		index2[1] /= base
+	ans = np.array([index1, index2, index3])
+	print ans
+	return ans

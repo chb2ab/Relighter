@@ -6,7 +6,7 @@ import scipy.misc
 # readDir(root, prog, filetype, sourcedir, downsample)
 # readCSV(root, prog, filename)
 
-# Takes in the filetype of the images in a directory (str), the name of the directory (str), the size ratio to downsample each image (float), and a . Returns a list of image vectors (numpy.arrays) and a list of filenames for each image (str).
+# Takes in a Tkinter root and label for displaying the loading progress, the filetype of the images in a directory (str), the name of the directory (str), and the size ratio to downsample each image (float). Returns a list of image vectors (numpy.arrays), a list of filenames for each image (str), and a list of image matrices (numpy.arrays).
 def readDir(root, prog, filetype, sourcedir, downsample):
 	images = []
 	imagevects = []
@@ -24,8 +24,7 @@ def readDir(root, prog, filetype, sourcedir, downsample):
 			imagevects.append(image)
 			imagenames.append(fle)
 	return imagevects, imagenames, images
-
-# Takes in a csv filename e.g. 'sphcordsprims200.csv' where each row is a sample and each column is a dimension. Returns a list of lists where each list is a sample and each element of the list is a dimension.
+# Takes in a Tkinter root and label for displaying the loading progress, a csv filename e.g. 'sphcordsprims200.csv' where each row is a sample and each column is a dimension. Returns a 2 dimensional list where each row is a sample and each column is a dimension and an empty list.
 def readCSV(root, prog, filename):
 	imagevects = []
 	imagelen = 0

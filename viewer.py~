@@ -1,7 +1,12 @@
-from Tkinter import *
+try:
+# for Python2
+	from Tkinter import *
+except ImportError:
+# for Python3
+	from tkinter import *
 from reader import readDir, readCSV
 from isomap import euclidKNN, floyds, MDS
-from Sphere import sphFitting, sphBase, chooseTop, getTop, Rectify, UnfoldSphere, RotateCords
+from Sphere import sphFitting, chooseTop, getTop, Rectify, UnfoldSphere, RotateCords
 import numpy as np
 import Image, ImageTk
 from Delauney import interpolate
@@ -30,12 +35,11 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 # show3Dembeddingwn(self)
 # showunroll(self)
 # showunrollwn(self)
-import pdb
+
 class Viewer:
 	# Initializes main window in the upper left corner of the screen. Two buttons are provided, the first one will adjust the main window to read data from a CSV file as discussed in the readme and the second will adjust the main window to read data from a directory full of images.
 	def __init__(self):
 		self.root = Tk()
-		pdb.set_trace()
 		self.root.wm_geometry(u'10x10+0+0')
 		self.root.wm_geometry('')
 		self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
@@ -75,7 +79,7 @@ class Viewer:
 		self.lbl3.pack(side='left')
 		self.in3.pack(side='left')
 		self.in3.delete(0,END)
-		self.in3.insert(0,'sphcordsprims200.csv')
+		self.in3.insert(0,'Test Data Sets/sphcordsprims200.csv')
 		self.okcsv.pack(side='right')
 		self.root.bind("<Return>", self.getCSV)
 	# Adjusts the main window to accept a filetype and name of directory. Pressing the 'Ok' button calls getDir
@@ -90,10 +94,10 @@ class Viewer:
 		self.lbl2.pack(side='left')
 		self.in2.pack(side='left')
 		self.in2.delete(0,END)
-		self.in2.insert(0,'sphere110')
+		self.in2.insert(0,'Test Data Sets/sphere110')
 		self.okdir.pack(side='right')
 		self.root.bind("<Return>", self.getDir)
-	# Read the data from a directory of images. The main window displays how many images have been read so far. The class variable imagenames is set as a list of all the image files and the class variable images is a list of image matrices (numpy.arrays). After the images are read a k value is input and embed is called after pressing the 'Ok' button.
+	# Read the data from a directory of images. The main window displays how many images have been read so far. The class variable imagenames is set as a list of all the image files and the class variable images is a list of image matrices (numpy.arrays). After the images are read a k value is input and embed is called after pressing the 'Ok' button. The k value is initialized to 10% of the number of samples.
 	def getDir(self, *args):
 		self.filetype = self.in1.get()
 		self.sourcedir = self.in2.get()
@@ -104,13 +108,14 @@ class Viewer:
 		imagevects, self.imagenames, self.images = readDir(self.root, self.prog, self.filetype, self.sourcedir, 0.25)
 		self.lbl = Label(self.ftop,text="k nearest neighbors:")
 		self.kin = Entry(self.ftop,text='k')
+		self.kin.insert(0,int(len(imagevects)*0.1))
 		self.ok = Button(self.ftop,text='Ok',command= lambda: self.embed(imagevects))
 		self.kin.focus_set()
 		self.lbl.pack(side='left')
 		self.kin.pack(side='left')
 		self.ok.pack(side='left')
 		self.root.bind("<Return>", lambda e: self.embed(imagevects))
-	# Read the data from a CSV file. The main window displays the progress made so far. Imagenames will be an empty list. After the data are read a k value is input and embed is called after pressing the 'Ok' button.
+	# Read the data from a CSV file. The main window displays the progress made so far. Imagenames will be an empty list. After the data are read a k value is input and embed is called after pressing the 'Ok' button. The k value is initialized to 10% of the number of samples.
 	def getCSV(self, *args):
 		filename = self.in3.get()
 		self.rcsv.destroy()
@@ -120,6 +125,7 @@ class Viewer:
 		imagevects, self.imagenames = readCSV(self.root, self.prog, filename)
 		self.lbl = Label(self.ftop,text="k nearest neighbors:")
 		self.kin = Entry(self.ftop,text='k')
+		self.kin.insert(0,int(len(imagevects)*0.1))
 		self.ok = Button(self.ftop,text='Ok',command= lambda: self.embed(imagevects))
 		self.kin.focus_set()
 		self.lbl.pack(side='left')
@@ -227,7 +233,7 @@ class Viewer:
 		self.after_id = self.root.after(15, self.poll)
 	# Get the mouse position on the blue panel, call the delauney interpolate function to find the 3 nearest data points (represented as the 3 black dots on the panel nearest to the cursor) and their corresponding weights, color these 3 points white to visualize where the images are coming from, retrieve the 3 images these data points correspond too, linearly interpolate these 3 images based on the weights found from the interpolation, and replace the imgv label with the newly formed image.
 	def do_work(self):
-		# Get mouse position on the blue panel
+		# Get mouse position on the blue panel, the origin is the center of the panel.
 		x = self.root.winfo_pointerx()
 		y = self.root.winfo_pointery()
 		xx = self.canvas.winfo_rootx()
@@ -246,22 +252,23 @@ class Viewer:
 		self.canvas.itemconfigure(self.rectangles[int(index2[0])], fill='white')
 		self.canvas.itemconfigure(self.rectangles[int(index3[0])], fill='white')
 		self.previous = [int(index1[0]), int(index2[0]), int(index3[0])]
-		# When the cursor is outside the cloud of data points only 2 nearest data points are used to interpolate the new image
-		if index3[0] == -1:
-			w1 = index1[1]
-			w2 = index2[1]
-			npimg = (w1 *self.images[int(index1[0])] + self.images[int(index2[0])] * w2)
-		# Otherwise the new image is the interpolation of 3 nearest data points
-		else:
-			w1 = index1[1]
-			w2 = index2[1]
-			w3 = index3[1]
-			npimg = (w1 *self.images[int(index1[0])] + self.images[int(index2[0])] * w2 + self.images[int(index3[0])] *w3)
-		# imgv is then set to display this newly interpolated image
-		img = Image.fromarray(np.uint8(npimg))
-		imgTk = ImageTk.PhotoImage(img)
-		self.imgv.configure(image = imgTk)
-		self.imgv.image = imgTk
+		if (len(self.imagenames !=0)):
+			# When the cursor is outside the cloud of data points only 2 nearest data points are used to interpolate the new image
+			if index3[0] == -1:
+				w1 = index1[1]
+				w2 = index2[1]
+				npimg = (w1 *self.images[int(index1[0])] + self.images[int(index2[0])] * w2)
+			# Otherwise the new image is the interpolation of 3 nearest data points
+			else:
+				w1 = index1[1]
+				w2 = index2[1]
+				w3 = index3[1]
+				npimg = (w1 *self.images[int(index1[0])] + self.images[int(index2[0])] * w2 + self.images[int(index3[0])] *w3)
+			# imgv is then set to display this newly interpolated image
+			img = Image.fromarray(np.uint8(npimg))
+			imgTk = ImageTk.PhotoImage(img)
+			self.imgv.configure(image = imgTk)
+			self.imgv.image = imgTk
 	# Create a pyplot displaying the raw 3D embedding of the data.
 	def showraw3Dembedding(self):
 		x,y,z = zip(*self.rawembedrect3d)

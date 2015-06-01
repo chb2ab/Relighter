@@ -1,3 +1,52 @@
-reLight -> viewer -> reader and isomap and delauney and (sphere -> svd_FitHypersphere)
-how to format csv
-what the panel and rotater scale is
+Crispin Bernier (chb2ab@virginia.edu)
+Please email me if something isn't working
+
+This started as a group project in Jason Lawrence's Computer Vision class (University of Virginia) with group members Jinlong (Frank) Feng, Jack Doerner, Haoran Hou, and I.
+
+This is an implementation of the paper:
+Light Waving: Estimating Light Positions From Photographs Alone
+
+Holger Winnemöller	
+ 
+
+Ankit Mohan
+
+ 	
+Jack Tumblin
+
+ 	
+Bruce Gooch
+
+
+which can be found here: http://web.media.mit.edu/~ankit/lightwaving/
+
+
+Requires scipy, python 2 or 3.
+
+Notes
+- Reading a directory of images is far more interesting then reading a csv.
+- The slowest part of this algorithm is the "geodesics" portion after step 3 which is calculating the geodesic distances between all pairs of points. This is a N^3 algorithm where N is the number of vertices which in this case would be the number of images in the directory or the number of rows in the csv file.
+- How to format csv: Each row is a sample, each collumn is a dimension.
+- The test sets were made in Blender by moving a light source around a sphere.
+
+Steps
+1) Run reLight.py.
+2) Choose between reading data from a CSV file or from a directory of images, the entry box will be initialized to one of the test data sets. Press Ok.
+3) Choose an integer value for k nearest neighbors. I have found that 10% of the number of entries works well but also experiment with different values. Press Ok.
+4) 2 windows should be open, a pyplot window and the Tkinter main window. If you used the test data set the data in the pyplot should form a hemisphere, if it doesn't try restarting and increasing the k value.
+5) On the pyplot window click a point, if point was properly selected it should be highlighted red and the label on the main window should display the coordinates of that point. The data can be rotated by clicking and dragging in an empy area on the plot.
+6) Pressing accept coordinates will reorient the data so this point lies on the +z axis and will unwrap the data into 2 dimensions using that point as the origin. If using the test data, choose a point at the top of the hemi-sphere as the unwrap point.
+7) The sphere will be unwrapped into 2 dimensions and displayed on a blue panel with the data represented as black dots and the point chosen previously at the center of the panel.
+8) Pressing on the panel will perform a triangulation and highlight the triangulated data points white. The scale on the right will rotate the data in the blue panel.
+9) If the data used was a directory of images each black dot corresponds to an image and pressing on the panel will display the highlighted images weighted according to the position of the cursor.
+10) Buttons along the top are used to display the data at different parts of the process and are described in more detail below.
+
+w/Neighbors: Shows the neighbor relations between data points at a particular step. Neighbors are connected with a line and data points have approximately k neighbors with k being a user input. Note that w/Neighbors generally takes a much longer time for pyplot to display and is slower to manipulate then the other visualizations.
+
+Raw 3D Embedding: Embedding of the data into 3 dimensions using classic multi-dimensional scaling. This is done after step 3.
+
+Fit 3D Embedding: The Raw 3D embedding is then fit to a sphere using least squares regression and the data is projected onto the sphere. This is also shown in step 4 where the user selects the point to unroll from.
+
+Unrolled Embedding
+
+Thank you!! :)
