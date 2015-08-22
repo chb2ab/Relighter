@@ -13,6 +13,7 @@ from Delauney import interpolate
 import scipy.misc
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+import csv
 
 # List of methods
 # __init__(self)
@@ -79,7 +80,7 @@ class Viewer:
 		self.lbl3.pack(side='left')
 		self.in3.pack(side='left')
 		self.in3.delete(0,END)
-		self.in3.insert(0,'Test Data Sets/sphcordsprims200.csv')
+		self.in3.insert(0,'Test_Data_Sets/sphcordsprims200.csv')
 		self.okcsv.pack(side='right')
 		self.root.bind("<Return>", self.getCSV)
 	# Adjusts the main window to accept a filetype and name of directory. Pressing the 'Ok' button calls getDir
@@ -94,7 +95,7 @@ class Viewer:
 		self.lbl2.pack(side='left')
 		self.in2.pack(side='left')
 		self.in2.delete(0,END)
-		self.in2.insert(0,'Test Data Sets/sphere110')
+		self.in2.insert(0,'Test_Data_Sets/sphere110')
 		self.okdir.pack(side='right')
 		self.root.bind("<Return>", self.getDir)
 	# Read the data from a directory of images. The main window displays how many images have been read so far. The class variable imagenames is set as a list of all the image files and the class variable images is a list of image matrices (numpy.arrays). After the images are read a k value is input and embed is called after pressing the 'Ok' button. The k value is initialized to 10% of the number of samples.
@@ -176,6 +177,10 @@ class Viewer:
 		b5.pack(side = 'left')
 		b6 = Button(buttonFrame, text='w/ Neighbors', command=self.showunrollwn)
 		b6.pack(side = 'left')
+		b7 = Button(buttonFrame, text='Save', command=self.saveCSV)
+		b7.pack(side = 'left')
+		b8 = Button(buttonFrame, text='Flip', command=self.flip)
+		b8.pack(side = 'left')
 		buttonFrame.pack(side='top')
 		# image display (if images were used)
 		self.imgv=Label(self.root)
@@ -332,7 +337,17 @@ class Viewer:
 				if ii in self.neighborlist[jj]:
 					self.neighborlist[jj].remove(ii)
 		fig.show()
-
-
-
+	# Save the 2 dimensional data points into a csv file, 1st column picture number, 2nd collumn x coordinate, 3rd collumn y coordinate.
+	def saveCSV(self):
+		f = open('save.csv',  'w+')
+		writer = csv.writer(f)
+		write = zip(self.imagenames, self.paneldata)
+		for row in write:
+			writer.writerow([row[0], row[1][0], row[1][1]])
+	# Flip the coordinates on the control panel horizontally.
+	def flip(self):
+		for row in self.paneldata:
+			row[0] *= -1
+		self.canvas.delete("all")
+		self.placeRects()
 
