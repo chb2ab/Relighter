@@ -1,45 +1,34 @@
-1. Run reLight.py with python.
-2. tk window should pop up. Default settings should run through an example data set.
-
-Crispin Bernier (chb2ab@virginia.edu)
-
-This started as a group project in Jason Lawrence's Computer Vision class (University of Virginia) with group members Jinlong (Frank) Feng, Jack Doerner, Haoran Hou, and I.
-
-This is an implementation of the paper:
-Light Waving: Estimating Light Positions From Photographs Alone
-
-Holger Winnemöller	
- 
-
-Ankit Mohan
-
- 	
-Jack Tumblin
-
- 	
-Bruce Gooch
+# Light Waving
+### Relight Images
+- Menu Interface
+- Isomap and Multi-dimensional Scaling
+- Delaunay Triangulations
 
 
-which can be found here: http://web.media.mit.edu/~ankit/lightwaving/
 
+Instructions
+1. Run reLight.py with python. Testing was done with python 2.7 with scipy and tkinter.
+2. tk window should pop up. Choose 'Read a directory of images' and the default settings should run through an example data set.
+3. Reading from a CSV file will only perform the Isomap embedding and will not display an interactive image
 
 Notes
-- Requires scipy
 - For doing MDS on a CSV file each row should be a sample and each collumn should be a dimension.
-- The slowest part of this is doing floyds algorithm on N, where N is the number of samples.
+- The bottleneck of this algorithm is doing floyds algorithm over N sample image vectors.
 - The test sets were made in Blender.
-- These are descriptions for the buttons along the top of the final window.
 
-w/Neighbors: Shows the neighbor relations between data points at a particular step. Neighbors are connected with a line and data points have approximately k neighbors with k being a user input. Note that w/Neighbors generally takes a much longer time for pyplot to display and is slower to manipulate then the other visualizations.
+Descriptions of some Menu Buttons.
 
-Raw 3D Embedding: Embedding of the data into 3 dimensions using classic multi-dimensional scaling. This is done after step 3.
+Raw 3D Embedding: Embedding of the data into 3 dimensions using classic multi-dimensional scaling.
 
-Fit 3D Embedding: The Raw 3D embedding is then fit to a sphere using least squares regression and the data is projected onto the sphere. This is also shown in step 4 where the user selects the point to unwrap from.
+Fit 3D Embedding: The Raw 3D embedding is then fit to a sphere using least squares regression and the data is projected onto the sphere. This is also shown when the user selects the point to unwrap the data from.
 
-Unrolled Embedding: This is also displayed on the blue panel in step 7. After projecting the data onto a sphere it is unwrapped into 2 dimensions.
+Unrolled Embedding: This is also displayed on the blue panel in the final menu After projecting the data onto a sphere it is unwrapped into 2 dimensions.
 
-save: Saves a csv file in the same directory with the unrolled embedding.
+w/Neighbors: Shows the neighbor relations between data points at a particular step. Neighbors are connected with a line and data points have approximately k neighbors with k being a user input. w/Neighbors generally takes a longer time for pyplot to display and is slower to manipulate then the other visualizations.
 
-flip: Flips the points on the control panel vertically
+Save: Saves a csv file in the same directory with the unrolled embedding.
 
-Thank you!! :)
+Flip: Flips the points on the control panel vertically
+
+Writeup
+<a src="http://www.crispinbernier.me/reLweb/light-waving-report.pdf">http://www.crispinbernier.me/reLweb/light-waving-report.pdf</a>
