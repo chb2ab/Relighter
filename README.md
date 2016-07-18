@@ -29,12 +29,12 @@ Visualization of the image vectors embedded into 3 dimensions using Isomap
 <br>
 3D sphere "unrolled" into 2 dimensions
 <br>
-<img src="unrolled.png" width="200">
+<img src="unrolled.png" width="300">
 <br>
 Demonstration of final output of the desktop application.
-<video width="400" height="200" controls> <source src="recording.mp4" type="video/mp4">
-	Your browser does not support the video tag.</video>
-<br/>
+<br>
+<img src="sphere.gif" width="400"> 
+<br>
 
 
 
