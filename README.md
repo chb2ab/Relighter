@@ -1,22 +1,23 @@
 # Light Waving
-### Relight Images
+### Relighting Images
 - Menu Interface
 - Isomap and Multi-dimensional Scaling
 - Delaunay Triangulations
 
+####Images
+<img src="13.jpg" width="400"> 
 
-
-Instructions
+####Instructions
 1. Run reLight.py with python. Testing was done with python 2.7 with scipy and tkinter.
 2. tk window should pop up. Choose 'Read a directory of images' and the default settings should run through an example data set.
 3. Reading from a CSV file will only perform the Isomap embedding and will not display an interactive image
 
-Notes
+####Notes
 - For doing MDS on a CSV file each row should be a sample and each collumn should be a dimension.
 - The bottleneck of this algorithm is doing floyds algorithm over N sample image vectors.
 - The test sets were made in Blender.
 
-Descriptions of some Menu Buttons.
+####Descriptions of some Menu Buttons.
 
 Raw 3D Embedding: Embedding of the data into 3 dimensions using classic multi-dimensional scaling.
 
