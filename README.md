@@ -34,11 +34,11 @@ Visualization of the image vectors embedded into 3 dimensions using Isomap. Each
 Demonstrations of the inal output of the desktop application.
 <br>
 <br>
-<img src="sphere.gif" width="600"> 
+<img src="sphere.gif" width="500"> 
 <br>
-<img src="camera.gif" width="600"> 
+<img src="camera.gif" width="500"> 
 <br>
-<img src="cube.gif" width="600"> 
+<img src="cube.gif" width="500"> 
 <br>
 
 
