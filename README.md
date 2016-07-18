@@ -11,17 +11,21 @@
 
 ###Images of the Process
 Some examples of input images
+<br>
 <img src="sample1.jpg" width="200"> 
 <img src="sample2.jpg" width="200"> 
 <img src="sample3.jpg" width="200">
 <br>
 Visualization of the image vectors embedded into 3 dimensions using Isomap
+<br>
 <img src="embedded.png" width="400">
 <br>
 3D embedding fitted to sphere using least squares fitting
+<br>
 <img src="fit_to_sphere.png" width="400">
 <br>
 3D sphere "unrolled" into 2 dimensions
+<br>
 <img src="unrolled.png" width="400">
 <br>
 
