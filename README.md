@@ -4,6 +4,7 @@
 - Isomap and Multi-dimensional Scaling
 - Delaunay Triangulations
 
+####Online Demo
 Please see <a src="http://www.crispinbernier.me/reLweb/reLight.php">http://www.crispinbernier.me/reLweb/reLight.php</a> for an online demo of the final output.
 
 ####Instructions
@@ -31,7 +32,7 @@ Visualization of the image vectors embedded into 3 dimensions using Isomap. Each
 <br>
 <img src="unrolled.png" width="300">
 <br>
-Demonstrations of the inal output of the desktop application.
+Demonstrations of the final output from the desktop application.
 <br>
 <br>
 <img src="sphere.gif" width="500"> 
