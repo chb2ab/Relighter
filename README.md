@@ -4,10 +4,13 @@
 - Isomap and Multi-dimensional Scaling
 - Delaunay Triangulations
 
+Please see <a src="http://www.crispinbernier.me/reLweb/reLight.php">http://www.crispinbernier.me/reLweb/reLight.php</a> for an online demo of the final output.
+
 ####Instructions
 1. Run reLight.py with <code>$ python reLight.py</code>. Testing was done with python 2.7 with scipy and tkinter.
-2. tk window should pop up. Choose 'Read a directory of images' and the default settings should run through an example data set.
-3. Reading from a CSV file will only perform the Isomap embedding and will not display an interactive image
+2. tk window should pop up. Choose 'Read a directory of images' and the default settings should run through an example data set. (The 'Read from CSV file' option is only used for performing Isomap embeddings on CSV files of coordinate vectors and not for doing light waving interpolations.)
+3. After picking the top point of the embedded sphere click the 'accept coordinates' button in the seperate window.
+4. The interpolated image may not appear until a coordinate on the blue canvas is selected
 
 ###Images of the Process
 Some examples of input images
@@ -26,8 +29,12 @@ Visualization of the image vectors embedded into 3 dimensions using Isomap
 <br>
 3D sphere "unrolled" into 2 dimensions
 <br>
-<img src="unrolled.png" width="400">
+<img src="unrolled.png" width="200">
 <br>
+Demonstration of final output of the desktop application.
+<video width="400" height="200" controls> <source src="recording.mp4" type="video/mp4">
+	Your browser does not support the video tag.</video>
+<br/>
 
 
 

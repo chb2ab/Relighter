@@ -62,7 +62,7 @@ def chooseTop(prog, coordinates):
 	x,y,z = zip(*coordinates)
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111, projection='3d')
-	ax1.set_title('Pick the Top Point')
+	ax1.set_title('Pick the Top of the Sphere')
 	ax1.scatter(x, y, z, c='b',picker=5)
 	fig.canvas.mpl_connect('pick_event', lambda event: onpick(event, ax1, prog))
 	fig.show()
