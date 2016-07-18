@@ -4,13 +4,28 @@
 - Isomap and Multi-dimensional Scaling
 - Delaunay Triangulations
 
-####Images
-<img src="13.jpg" width="400"> 
-
 ####Instructions
-1. Run reLight.py with python. Testing was done with python 2.7 with scipy and tkinter.
+1. Run reLight.py with <code>$ python reLight.py</code>. Testing was done with python 2.7 with scipy and tkinter.
 2. tk window should pop up. Choose 'Read a directory of images' and the default settings should run through an example data set.
 3. Reading from a CSV file will only perform the Isomap embedding and will not display an interactive image
+
+###Images of the Process
+Some examples of input images
+<img src="sample1.jpg" width="200"> 
+<img src="sample2.jpg" width="200"> 
+<img src="sample3.jpg" width="200">
+<br>
+Visualization of the image vectors embedded into 3 dimensions using Isomap
+<img src="embedded.png" width="400">
+<br>
+3D embedding fitted to sphere using least squares fitting
+<img src="fit_to_sphere.png" width="400">
+<br>
+3D sphere "unrolled" into 2 dimensions
+<img src="unrolled.png" width="400">
+<br>
+
+
 
 ####Notes
 - For doing MDS on a CSV file each row should be a sample and each collumn should be a dimension.
