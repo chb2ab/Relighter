@@ -19,7 +19,7 @@ Some examples of input images
 <img src="sample2.jpg" width="200"> 
 <img src="sample3.jpg" width="200">
 <br>
-Visualization of the image vectors embedded into 3 dimensions using Isomap
+Visualization of the image vectors embedded into 3 dimensions using Isomap. Each dot represents an image
 <br>
 <img src="embedded.png" width="400">
 <br>
@@ -31,9 +31,14 @@ Visualization of the image vectors embedded into 3 dimensions using Isomap
 <br>
 <img src="unrolled.png" width="300">
 <br>
-Demonstration of final output of the desktop application.
+Demonstrations of the inal output of the desktop application.
 <br>
-<img src="sphere.gif" width="400"> 
+<br>
+<img src="sphere.gif" width="600"> 
+<br>
+<img src="camera.gif" width="600"> 
+<br>
+<img src="cube.gif" width="600"> 
 <br>
 
 
